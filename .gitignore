@@ -1,0 +1,8 @@
+TDA-Proj/data/
+TDA-Proj/ckpts/
+TDA-Proj/__pycache__/
+__pycache__/
+.vscode/
+data/
+global_data.pkl
+global_data_small.pkl

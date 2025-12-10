@@ -1,0 +1,31 @@
+{
+  "model": "GMMVAE_CNN",
+  "dataset": "CIFAR10",
+  "embedding_dim": 64,
+  "num_classes": 10,
+  "conv_channels": [256, 256, 512, 512, 512],
+  "conv_strides": [1,1,2,1,2],
+  "use_residual": false,
+  "num_residual_blocks": 1,
+  "beta_start": 0.0,
+  "beta_end": 0.00005,
+  "beta_warmup_epochs": 0,
+  "beta_annealing_epochs": 50,
+  "batch_size": 32,
+  "num_epochs": 50,
+  "verbose": true,
+  "random_seed": 42,
+  "save_path": "ckpts/gmm_cnn_cifar.pth",
+  "embeds_path": "embeddings/gmm_cnn_cifar.npz",
+  "optimizer": {
+    "name": "Adam",
+    "lr": 0.00005,
+    "weight_decay": 0.0
+  },
+
+  "criterion": null,
+
+  "recon_loss": "mse",
+
+  "notes": "Two-stage training with beta annealing: Start at beta=0 (pure autoencoder) for 20 epochs to learn good features, then gradually increase to beta=0.5 over remaining epochs. This gives both good reconstruction AND good GMM clustering structure. Beta=0.5 is strong enough for clustering but won't sacrifice reconstruction quality."
+}

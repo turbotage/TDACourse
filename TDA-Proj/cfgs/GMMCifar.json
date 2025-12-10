@@ -1,0 +1,23 @@
+{
+  "model": "GMMVAE",
+  "dataset": "CIFAR10",
+  "embedding_dim": 32,
+  "num_classes": 10,
+  "batch_size": 32,
+  "num_epochs": 50,
+  "verbose": true,
+  "random_seed": 42,
+  "save_path": "ckpts/gmm_cifar.pth",
+
+  "optimizer": {
+    "name": "Adam",
+    "lr": 0.001,
+    "weight_decay": 0.0
+  },
+
+  "criterion": null,
+
+  "recon_loss": "mse",
+
+  "notes": "Adjust 'dataset' to match a key in TrainingDatasets.DATASET_LOADERS. Training.main currently expects the script to instantiate optimizer/criterion from this config (or pass objects directly). For VAE models, `criterion` can be null because model.compute_loss is used."
+}

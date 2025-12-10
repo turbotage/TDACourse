@@ -1,0 +1,31 @@
+{
+  "model": "GMMVAE_CNN",
+  "dataset": "MNIST",
+  "embedding_dim": 3,
+  "num_classes": 10,
+  "conv_channels": [256, 256, 256, 256, 256],
+  "conv_strides": [1, 1, 2, 1, 2],
+  "use_residual": false,
+  "num_residual_blocks": 1,
+  "beta_start": 0.0,
+  "beta_end": 0.001,
+  "beta_warmup_epochs": 2,
+  "beta_annealing_epochs": 50,
+  "batch_size": 32,
+  "num_epochs": 80,
+  "verbose": true,
+  "random_seed": 42,
+  "save_path": "ckpts/gmm_cnn_mnist.pth",
+  "embeds_path": "embeds/gmm_cnn_mnist.npz",
+  "optimizer": {
+    "name": "Adam",
+    "lr": 0.00001,
+    "weight_decay": 0.0
+  },
+
+  "criterion": null,
+
+  "recon_loss": "mse",
+
+  "notes": "Setup for MNIST: Lower embedding_dim (8), smaller conv_channels, same beta annealing."
+}
