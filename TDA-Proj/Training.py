@@ -203,7 +203,7 @@ def main(config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a neural network model.")
-    parser.add_argument('--config', type=str, required=False, help='Path to the configuration JSON file.', default='TDA-Proj/cfgs/GMMConcentricTriangles.json')
+    parser.add_argument('--config', type=str, required=False, help='Path to the configuration JSON file.', default='cfgs/GMMConcentricTriangles.json')
     args = parser.parse_args()
 
     with open(args.config, 'r') as f:

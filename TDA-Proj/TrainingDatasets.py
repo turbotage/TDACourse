@@ -71,11 +71,11 @@ def get_concentric_triangles_dataloader(batch_size=64, num_samples=10000, shuffl
     test_dataset = ConcentricTrianglesDatasetTorch(number_of_samples=int(num_samples*0.2))
 
     dataset_expanded = np.zeros((train_dataset.X.shape[0], 2, 2), dtype=np.float32)
-    dataset_expanded[:, :, 0] = train_dataset.X[:, 0][:,None]
+    dataset_expanded[:, :, 0] = train_dataset.X
     train_dataset.X = dataset_expanded
 
     dataset_expanded = np.zeros((test_dataset.X.shape[0], 2, 2), dtype=np.float32)
-    dataset_expanded[:, :, 0] = test_dataset.X[:, 0][:,None]
+    dataset_expanded[:, :, 0] = test_dataset.X
     test_dataset.X = dataset_expanded
 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle_train)

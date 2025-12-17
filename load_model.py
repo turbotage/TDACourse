@@ -7,7 +7,7 @@ import sys
 sys.path.append('./TDA-Proj')
 
 from Models import GMMVAE_CNN, GMMVAE
-from TrainingDatasets import get_cifar10_dataloader, get_mnist_dataloader
+from TrainingDatasets import get_cifar10_dataloader, get_mnist_dataloader, get_concentric_triangles_dataloader
 
 def load_model_from_path(path, batchsize):
 	if path.endswith('.pth'):
@@ -59,6 +59,8 @@ def load_model(model_path, batch_size, dataset='cifar10', config_path=None):
 		model_kwargs['input_shape'] = (3, 32, 32)
 	elif dataset == 'mnist':
 		model_kwargs['input_shape'] = (1, 28, 28)
+	elif dataset == 'concentrictriangles':
+		model_kwargs['input_shape'] = (1, 2, 2)
 	else:
 		raise ValueError(f"Unknown dataset: {dataset}")
 
@@ -76,22 +78,42 @@ def load_model(model_path, batch_size, dataset='cifar10', config_path=None):
 	if 'num_residual_blocks' in model_config:
 		model_kwargs['num_residual_blocks'] = model_config['num_residual_blocks']
 
-	if dataset == 'cifar10' or (dataset == 'mnist' and model_type == 'cnn'):
+	# Determine which model to use based on config
+	model_name = model_config.get('model', 'GMMVAE_CNN')
+	
+	if model_name == 'GMMVAE_CNN' or (dataset in ['cifar10', 'mnist'] and model_type == 'cnn'):
 		model = GMMVAE_CNN(**model_kwargs)
 		is_color = (dataset == 'cifar10')
-	elif dataset == 'mnist':
+	elif model_name == 'GMMVAE' or dataset == 'concentrictriangles':
+		# For MLP-based GMMVAE, compute input_dim from input_shape
+		if 'input_shape' in model_kwargs:
+			input_shape = model_kwargs['input_shape']
+			if isinstance(input_shape, tuple):
+				input_dim = 1
+				for dim in input_shape:
+					input_dim *= dim
+			else:
+				input_dim = input_shape
+		else:
+			input_dim = 28*28  # default
+		
 		model = GMMVAE(
-			input_dim=28*28,
-			hidden_dim=512,
+			input_shape=input_dim,
 			embedding_dim=model_config.get('embedding_dim', 32),
 			num_classes=model_config.get('num_classes', 10)
 		)
 		is_color = False
+	else:
+		raise ValueError(f"Unknown model: {model_name}")
 
 	if dataset == 'cifar10':
 		train_loader, test_loader = get_cifar10_dataloader(batch_size=batch_size)
-	else:
+	elif dataset == 'mnist':
 		train_loader, test_loader = get_mnist_dataloader(batch_size=batch_size)
+	elif dataset == 'concentrictriangles':
+		train_loader, test_loader = get_concentric_triangles_dataloader(batch_size=batch_size)
+	else:
+		raise ValueError(f"Unknown dataset: {dataset}")
 
 	# Load model weights
 	model.load_state_dict(checkpoint)
