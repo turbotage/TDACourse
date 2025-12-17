@@ -104,5 +104,5 @@ def get_concentric_triangles_dataloader(batch_size=64, num_samples=1000, shuffle
 DATASET_LOADERS = {
     'CIFAR10': (get_cifar10_dataloader,(3,32,32)),
     'MNIST': (get_mnist_dataloader,(1,28,28)),
-    'ConcentricTriangles': (get_concentric_triangles_dataloader, (1,2))
+    'ConcentricTriangles': (get_concentric_triangles_dataloader, (1,2,1))
 }

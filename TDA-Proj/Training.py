@@ -133,6 +133,9 @@ def main(config):
     optimizer = create_optimizer(model.parameters(), config.get('optimizer'))
 
     train_data, test_data = data_getter(batch_size=config['batch_size'], shuffle_train = True)
+    #train_data.dataset.dataset.X = train_data.dataset.dataset.X.astype(np.float32)
+    #test_data.dataset.dataset.X = test_data.dataset.dataset.X.astype(np.float32)
+    
     best_val_loss = float('inf')
     best_state_dict = None
     
@@ -200,7 +203,7 @@ def main(config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a neural network model.")
-    parser.add_argument('--config', type=str, required=True, help='Path to the configuration JSON file.')
+    parser.add_argument('--config', type=str, required=False, help='Path to the configuration JSON file.', default='TDA-Proj/cfgs/GMMConcentricTriangles.json')
     args = parser.parse_args()
 
     with open(args.config, 'r') as f:

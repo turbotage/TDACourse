@@ -217,6 +217,7 @@ class ConvEncoder(nn.Module):
     """
     def __init__(self, input_shape, channels=(32, 64), latent_dim=32, kernel_size=3, use_batchnorm=True, use_residual=False, num_residual_blocks=1, conv_strides=None):
         super().__init__()
+        kernel_size = min(input_shape[-1], input_shape[-2], kernel_size) # Hack
         C, H, W = input_shape
         self.use_residual = use_residual
         # Use per-layer stride if provided, else default to 2

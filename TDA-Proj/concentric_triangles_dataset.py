@@ -149,7 +149,7 @@ class ConcentricTrianglesDataset(BaseDataset):
 
             points.append(point)
 
-        return np.array(points)
+        return np.array(points).astype(np.float32)
 
     def display_dataframe(self, df):
         print(df.head(12).to_string(index=False))
@@ -206,11 +206,11 @@ class ConcentricTrianglesDataset(BaseDataset):
 class ConcentricTrianglesDatasetTorch(Dataset):
 
     def __init__(self, number_of_samples=100,
-                 n_triangles=5, points_per_triangle=200, sizes=None, noise=0.0, rotation=0.0, random_state=None):
+                 n_triangles=5, points_per_triangle=None, sizes=None, noise=0.0, rotation=0.0, random_state=None):
         self.ctds = ConcentricTrianglesDataset(
             number_of_samples=number_of_samples,
             n_triangles=n_triangles,
-            points_per_triangle=points_per_triangle,
+            points_per_triangle=number_of_samples // n_triangles,
             sizes=sizes,
             noise=noise,
             rotation=rotation,
@@ -225,7 +225,7 @@ class ConcentricTrianglesDatasetTorch(Dataset):
 
 # Example usage
 if __name__ == "__main__":
-    dataset = ConcentricTrianglesDataset(number_of_samples=1000)
+    dataset = ConcentricTrianglesDataset(number_of_samples=10000)
     dataset.print_first_10_labels()
     dataset.print_first_10_images_and_labels()
     dataset.plot_image(0)
