@@ -75,8 +75,8 @@ def visualize_reconstruction(model_path, num_images=5, dataset='cifar10', config
         axes[1, i].set_title('Reconstructed')
         axes[1, i].axis('off')
     plt.tight_layout()
-    plt.savefig('reconstruction_comparison.png', dpi=150, bbox_inches='tight')
-    print("Saved visualization to: reconstruction_comparison.png")
+    plt.savefig('images/reconstruction/reconstruction_comparison.png', dpi=150, bbox_inches='tight')
+    print("Saved visualization to: images/reconstruction/reconstruction_comparison.png")
 
     # Reshape reconstructed to (B, C, H, W) for MSE calculation
     reconstructed_img = reconstructed.reshape(images.shape)

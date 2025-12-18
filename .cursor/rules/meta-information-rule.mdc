@@ -1,0 +1,12 @@
+---
+description: Project meta-information storage that is always should be read before a request and updated after a request rule
+alwaysApply: true
+---
+
+- Whenever you learn something structural about the project (e.g., architecture decisions, module responsibilities, key invariants, file relationships, design goals, overll aim of the project) add it to a centralized meta-document.txt in .cursor folder.
+- read .cursor/meta-document.txt in the beginning of every request.
+- update .cursor/meta-document.txt at the end of your research about the project uppon the requests. The information in the request prompt has higher priority.
+- .cursor/meta-document.txt helps with consistency across sessions, architectural reasoning, refactoring, generating new files that match the project’s structure, keeping assumptions explicit instead of implicit.
+- The .cursor/meta-document.txt may refer to other files that has to be maintained as well the same way as .cursor/meta-document.txt.
+- Use it as a stable source of truth.
+- If the .cursor/meta-document.txt does not exist, initialize it after analyzing the whole project.

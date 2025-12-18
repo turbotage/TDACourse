@@ -1,0 +1,9 @@
+---
+description: Creating documentation and test scripts
+globs:
+alwaysApply: true
+---
+
+- Do not create any .MD files or reference guides for documenting certain scripts or overall architecture unless explicitly asked to do it.
+- Do not create any new example usage files unless explicitly asked to do it.
+- Do not create any test scripts unless explicitly asked to do it.

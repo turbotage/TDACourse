@@ -84,8 +84,8 @@ def visualize_concentric_triangles(model_path, num_samples=500, config_path=None
     axes[1].grid(True, alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig('concentric_triangles_reconstruction.png', dpi=150, bbox_inches='tight')
-    print("Saved visualization to: concentric_triangles_reconstruction.png")
+    plt.savefig('images/triangles/concentric_triangles_reconstruction.png', dpi=150, bbox_inches='tight')
+    print("Saved visualization to: images/triangles/concentric_triangles_reconstruction.png")
     plt.show()
 
     # Calculate reconstruction MSE
@@ -122,8 +122,8 @@ def visualize_concentric_triangles(model_path, num_samples=500, config_path=None
     ax.legend()
     
     plt.tight_layout()
-    plt.savefig('concentric_triangles_error.png', dpi=150, bbox_inches='tight')
-    print("Saved error visualization to: concentric_triangles_error.png")
+    plt.savefig('images/triangles/concentric_triangles_error.png', dpi=150, bbox_inches='tight')
+    print("Saved error visualization to: images/triangles/concentric_triangles_error.png")
     plt.show()
 
 

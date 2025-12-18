@@ -45,7 +45,7 @@ if __name__ == "__main__":
         fig.colorbar(scatter, ax=ax, label='Label')
         plt.title(f'3D Latent Space Projection ({name})')
         plt.tight_layout()
-        filename = f'3d_latent_scatter_{name}.png'
+        filename = f'images/3d_latent/3d_latent_scatter_{name}.png'
         plt.savefig(filename, dpi=150, bbox_inches='tight')
         plt.close(fig)
         print(f'Saved 3D latent scatter plot to {filename}')
