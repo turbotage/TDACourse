@@ -1,7 +1,7 @@
 {
   "model": "GMMVAE_CNN",
   "dataset": "CIFAR10",
-  "embedding_dim": 32,
+  "embedding_dim": 12,
   "num_classes": 10,
   "conv_channels": [256, 256, 512, 512, 512],
   "conv_strides": [1,1,2,1,2],
