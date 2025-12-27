@@ -3,7 +3,9 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import os
+import random
+import numpy as np
 
 def prod(t):
     p = 1
@@ -359,3 +361,29 @@ MODELS = {
     'GMMVAE_CNN': GMMVAE_CNN,
     'VaDE_CNN': VaDE_CNN,
 }
+
+def load_model_from_config(config, input_shape) -> nn.Module:
+    model = MODELS[config['model']]
+    
+    # instantiate model with proper kwargs (similar to Training.py)
+    model_kwargs = {
+        'input_shape': input_shape,
+        'embedding_dim': config['embedding_dim'],
+        'num_classes': config['num_classes']
+    }
+    # Add conv_channels if specified (for CNN models)
+    if 'conv_channels' in config:
+        model_kwargs['conv_channels'] = tuple(config['conv_channels'])
+    # Add conv_strides if specified (for CNN models)
+    if 'conv_strides' in config:
+        model_kwargs['conv_strides'] = list(config['conv_strides'])
+    # Add use_residual if specified
+    if 'use_residual' in config:
+        model_kwargs['use_residual'] = config['use_residual']
+    # Add num_residual_blocks if specified
+    if 'num_residual_blocks' in config:
+        model_kwargs['num_residual_blocks'] = config['num_residual_blocks']
+        
+    return model(**model_kwargs)
+    
+    

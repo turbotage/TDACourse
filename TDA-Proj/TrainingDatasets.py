@@ -1,4 +1,3 @@
-import torch
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
@@ -70,14 +69,20 @@ def get_concentric_triangles_dataloader(batch_size=64, num_samples=10000, shuffl
     train_dataset = ConcentricTrianglesDatasetTorch(number_of_samples=int(num_samples*0.8))
     test_dataset = ConcentricTrianglesDatasetTorch(number_of_samples=int(num_samples*0.2))
 
-    dataset_expanded = np.zeros((train_dataset.X.shape[0], 2, 2), dtype=np.float32)
-    dataset_expanded[:, :, 0] = train_dataset.X
-    train_dataset.X = dataset_expanded
+    # dataset_expanded = np.zeros((train_dataset.X.shape[0], 2, 2), dtype=np.float32)
+    # dataset_expanded[:, :, 0] = train_dataset.X
+    # train_dataset.X = dataset_expanded
 
-    dataset_expanded = np.zeros((test_dataset.X.shape[0], 2, 2), dtype=np.float32)
-    dataset_expanded[:, :, 0] = test_dataset.X
-    test_dataset.X = dataset_expanded
-
+    # dataset_expanded = np.zeros((test_dataset.X.shape[0], 2, 2), dtype=np.float32)
+    # dataset_expanded[:, :, 0] = test_dataset.X
+    # test_dataset.X = dataset_expanded
+    
+    #convert to float32
+    train_dataset.X = train_dataset.X.astype(np.float32)
+    test_dataset.X = test_dataset.X.astype(np.float32)
+    #print shape
+    print(f"Train dataset shape: {train_dataset.X.shape}")
+    print(f"Test dataset shape: {test_dataset.X.shape}")
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle_train)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
@@ -86,5 +91,5 @@ def get_concentric_triangles_dataloader(batch_size=64, num_samples=10000, shuffl
 DATASET_LOADERS = {
     'CIFAR10': (get_cifar10_dataloader,(3,32,32)),
     'MNIST': (get_mnist_dataloader,(1,28,28)),
-    'ConcentricTriangles': (get_concentric_triangles_dataloader, (1,2,2))
+    'ConcentricTriangles': (get_concentric_triangles_dataloader, (1,2))
 }

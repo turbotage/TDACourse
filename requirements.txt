@@ -1,0 +1,14 @@
+torch
+torchvision
+numpy
+matplotlib
+ripser
+persim
+umap-learn
+scikit-learn
+pandas
+dash
+plotly
+flask
+tqdm
+

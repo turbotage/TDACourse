@@ -2,13 +2,9 @@ import torch
 import json
 import argparse
 from TrainingDatasets import DATASET_LOADERS
-from tqdm import tqdm
-import os
-import random
 import numpy as np
-from Models import MODELS
-
-
+from Models import load_model_from_config
+from preamble import *
 
 def epoch(model, dataloader, device='cpu'):
     """
@@ -26,33 +22,26 @@ def epoch(model, dataloader, device='cpu'):
     for inputs, _ in dataloader:
         inputs = inputs.to(device)
 
-        # Forward pass
-        outputs_mu, outputs_logvar = model.encoder(inputs)
+        # Forward pass - use model.encode() which handles input shape properly
+        outputs_mu, outputs_logvar = model.encode(inputs)
         embeddings.append(outputs_mu.cpu().detach().numpy())
     embeddings = np.vstack(embeddings)
 
     return embeddings
 
-def fix_random_seeds(seed=69):
-    """
-    Fix random seeds.
-    """
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+
 
 def main(config):
-    model = MODELS[config['model']]
-    dataset = config['dataset']
-    fix_random_seeds(config.get('random_seed', 69))
+    
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    dataset = config['dataset']
     data_getter, input_shape = DATASET_LOADERS[dataset]
-    model = model(input_shape = input_shape, embedding_dim=config['embedding_dim'], num_classes=config['num_classes']).to(device)
+    
+    model = load_model_from_config(config, input_shape).to(device)
+    
     model.load_state_dict(torch.load(config['save_path'], map_location=device))
+    
+    fix_random_seeds(config.get('random_seed', 69))
     train_data, test_data = data_getter(batch_size=config['batch_size'], shuffle_train = False)
 
     train_embeddings = epoch(model, train_data, device)

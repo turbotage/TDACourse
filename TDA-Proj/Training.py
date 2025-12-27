@@ -4,7 +4,7 @@ import os
 import glob
 from TrainingDatasets import DATASET_LOADERS
 from tqdm import tqdm
-from Models import MODELS
+from Models import MODELS, load_model_from_config
 from preamble import *
 
 def epoch(model, dataloader, criterion, optimizer=None, device='cpu', verbose=True, beta=1.0):
@@ -100,33 +100,15 @@ def epoch(model, dataloader, criterion, optimizer=None, device='cpu', verbose=Tr
     return epoch_loss, epoch_acc, epoch_recon, epoch_kl
 
 def main(config):
-    model = MODELS[config['model']]
+    fix_random_seeds(config.get('random_seed', 69))
+    
     dataset = config['dataset']
     num_epochs = config['num_epochs']
     verbose = config.get('verbose', True)
-    fix_random_seeds(config.get('random_seed', 69))
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     data_getter, input_shape = DATASET_LOADERS[dataset]
-    # instantiate model
-    model_kwargs = {
-        'input_shape': input_shape,
-        'embedding_dim': config['embedding_dim'],
-        'num_classes': config['num_classes']
-    }
-    # Add conv_channels if specified (for CNN models)
-    if 'conv_channels' in config:
-        model_kwargs['conv_channels'] = tuple(config['conv_channels'])
-    # Add conv_strides if specified (for CNN models)
-    if 'conv_strides' in config:
-        model_kwargs['conv_strides'] = list(config['conv_strides'])
-    # Add use_residual if specified
-    if 'use_residual' in config:
-        model_kwargs['use_residual'] = config['use_residual']
-    # Add num_residual_blocks if specified
-    if 'num_residual_blocks' in config:
-        model_kwargs['num_residual_blocks'] = config['num_residual_blocks']
     
-    model = model(**model_kwargs).to(device)
+    model = load_model_from_config(config, input_shape).to(device)
 
     # instantiate criterion and optimizer from config if provided
     criterion = create_criterion(config.get('criterion'))

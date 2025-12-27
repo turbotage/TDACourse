@@ -83,19 +83,32 @@ def get_mnist_dataloader(batch_size=64, shuffle_train = True, embedding_path = '
 
     return train_dataloader, test_dataloader
 
-def get_concentric_triangles_dataloader(batch_size=64, num_samples=1000, shuffle_train = True):
+def get_concentric_triangles_dataloader(batch_size=64, num_samples=10000, shuffle_train = True):
     """
     Returns a DataLoader for the Concentric Triangles dataset.
+    Matches TrainingDatasets.py for consistency.
 
     Args:
         batch_size (int): Number of samples per batch.
-        num_samples (int): Total number of samples in the dataset.
+        num_samples (int): Total number of samples in the dataset (default: 10000 to match TrainingDatasets).
 
     Returns:
         DataLoader: DataLoader for the Concentric Triangles dataset.
     """
-    dataset = ConcentricTrianglesDatasetTorch(num_samples=num_samples)
-    train_dataset, test_dataset = torch.utils.data.random_split(dataset, [int(0.8 * num_samples), num_samples - int(0.8 * num_samples)])
+    # Generate full dataset
+    train_dataset = ConcentricTrianglesDatasetTorch(number_of_samples=int(num_samples*0.8))
+    test_dataset = ConcentricTrianglesDatasetTorch(number_of_samples=int(num_samples*0.2))
+
+    # Expand to (1, 2, 2) shape to match image format expected by models
+    # This matches the format used in TrainingDatasets.py
+    dataset_expanded = np.zeros((train_dataset.X.shape[0], 2, 2), dtype=np.float32)
+    dataset_expanded[:, :, 0] = train_dataset.X
+    train_dataset.X = dataset_expanded
+
+    dataset_expanded = np.zeros((test_dataset.X.shape[0], 2, 2), dtype=np.float32)
+    dataset_expanded[:, :, 0] = test_dataset.X
+    test_dataset.X = dataset_expanded
+
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle_train)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
@@ -104,5 +117,5 @@ def get_concentric_triangles_dataloader(batch_size=64, num_samples=1000, shuffle
 DATASET_LOADERS = {
     'CIFAR10': (get_cifar10_dataloader,(3,32,32)),
     'MNIST': (get_mnist_dataloader,(1,28,28)),
-    'ConcentricTriangles': (get_concentric_triangles_dataloader, (1,2,1))
+    'ConcentricTriangles': (get_concentric_triangles_dataloader, (1,2,2))
 }

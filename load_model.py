@@ -19,6 +19,8 @@ def load_model_from_path(path, batchsize):
 		dataset = 'mnist'
 	elif 'cifar' in path.lower():
 		dataset = 'cifar10'
+	elif 'concentric' in path.lower():
+		dataset = 'concentrictriangles'
 	else:
 		raise ValueError("Cannot infer dataset from model path. Please specify.")
 
@@ -60,7 +62,7 @@ def load_model(model_path, batch_size, dataset='cifar10', config_path=None):
 	elif dataset == 'mnist':
 		model_kwargs['input_shape'] = (1, 28, 28)
 	elif dataset == 'concentrictriangles':
-		model_kwargs['input_shape'] = (1, 2, 2)
+		model_kwargs['input_shape'] = (1, 2)
 	else:
 		raise ValueError(f"Unknown dataset: {dataset}")
 

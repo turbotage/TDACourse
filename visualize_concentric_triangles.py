@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
     # Automatically use config file with same name as model_path, replacing .pth with .json
     if args.model_path.endswith('.pth'):
-        config_path = args.model_path[:-4] + '.json'
+        config_path = 'TDA-Proj/cfgs/GMMConcentricTriangles.json'
     else:
         config_path = None
 
