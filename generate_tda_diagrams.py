@@ -95,6 +95,150 @@ def compute_persistence_diagrams(data, maxdim=2, max_samples=500):
     return result['dgms']
 
 
+def get_nice_label(embedding_name):
+    """
+    Convert embedding name to a nicer label for display.
+    
+    Args:
+        embedding_name: Short embedding name (e.g., 'raw', 'vae', 'umap_vae')
+    
+    Returns:
+        Nice label string
+    """
+    label_map = {
+        'raw': 'Raw Data',
+        'vae': 'VAE Embeddings',
+        'pca': 'PCA Embeddings',
+        'umap_raw': 'UMAP (Raw)',
+        'umap_pca': 'UMAP (PCA)',
+        'umap_vae': 'UMAP (VAE)',
+    }
+    return label_map.get(embedding_name, embedding_name)
+
+
+def generate_unified_persistence_diagrams(
+    embeddings_dict,
+    labels,
+    dataset_name,
+    model_name,
+    output_dir='images',
+    max_samples=500,
+    maxdim=2,
+    exclude_embeddings=None
+):
+    """
+    Generate a single unified figure with all persistence diagrams as subplots.
+    
+    Args:
+        embeddings_dict: Dictionary mapping embedding names to data (e.g., {'raw': data, 'vae': data, ...})
+        labels: Labels for coloring (torch.Tensor or numpy array)
+        dataset_name: Name of dataset
+        model_name: Name of model
+        output_dir: Output directory for images
+        max_samples: Maximum samples for persistence computation
+        maxdim: Maximum homology dimension
+        exclude_embeddings: List of embedding names to exclude from the figure (e.g., ['raw', 'pca'])
+    
+    Returns:
+        Path to saved figure
+    """
+    if exclude_embeddings is None:
+        exclude_embeddings = []
+    
+    # Filter out excluded embeddings and None values
+    filtered_embeddings = {
+        name: data for name, data in embeddings_dict.items()
+        if name not in exclude_embeddings and data is not None
+    }
+    
+    if not filtered_embeddings:
+        print('    No embeddings to plot')
+        return None
+    
+    # Compute persistence diagrams for all embeddings
+    print(f'    Computing persistence diagrams for {len(filtered_embeddings)} embedding(s)...')
+    diagrams_dict = {}
+    for emb_name, emb_data in filtered_embeddings.items():
+        print(f'      Computing for {emb_name}...')
+        try:
+            diagrams_dict[emb_name] = compute_persistence_diagrams(
+                emb_data, maxdim=maxdim, max_samples=max_samples
+            )
+        except Exception as e:
+            print(f'      Error computing diagrams for {emb_name}: {e}')
+            continue
+    
+    if not diagrams_dict:
+        print('    No valid diagrams computed')
+        return None
+    
+    # Create subplots
+    n_plots = len(diagrams_dict)
+    # Arrange in a grid: 3 columns per row, adjust rows accordingly
+    n_cols = min(3, n_plots)
+    n_rows = (n_plots + n_cols - 1) // n_cols
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(7 * n_cols, 7 * n_rows), squeeze=False)
+    
+    # Flatten axes to a list for easier indexing
+    axes = axes.flatten().tolist()
+    
+    # Embedding order for consistent layout
+    embedding_order = ['raw', 'vae', 'pca', 'umap_raw', 'umap_pca', 'umap_vae']
+    ordered_embeddings = [name for name in embedding_order if name in diagrams_dict]
+    # Add any remaining embeddings not in the order list
+    for name in diagrams_dict:
+        if name not in ordered_embeddings:
+            ordered_embeddings.append(name)
+    
+    # Plot each diagram
+    for idx, emb_name in enumerate(ordered_embeddings):
+        dgms = diagrams_dict[emb_name]
+        ax = axes[idx]
+        
+        # Plot the persistence diagram
+        plot_diagrams(dgms, show=False, ax=ax)
+        
+        # Set title with nice label and highlighting for vae and umap_vae
+        nice_label = get_nice_label(emb_name)
+        if emb_name in ['vae', 'umap_vae']:
+            # Highlight vae and umap_vae with bold and color
+            ax.set_title(nice_label, fontsize=14, fontweight='bold', color='darkblue')
+        else:
+            ax.set_title(nice_label, fontsize=14, fontweight='normal')
+    
+    # Hide unused subplots
+    for idx in range(len(ordered_embeddings), len(axes)):
+        axes[idx].axis('off')
+    
+    # Add overall title
+    fig.suptitle(
+        f'Persistence Diagrams - {dataset_name} - {model_name}',
+        fontsize=16,
+        fontweight='bold',
+        y=0.995
+    )
+    
+    # Adjust layout
+    plt.tight_layout(rect=[0, 0, 1, 0.98])
+    
+    # Save figure
+    pers_diag_dir = Path(output_dir) / 'pers_diags'
+    pers_diag_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Create filename with excluded embeddings noted if any
+    filename_suffix = ''
+    if exclude_embeddings:
+        filename_suffix = '_excl_' + '_'.join(sorted(exclude_embeddings))
+    
+    diag_path = pers_diag_dir / f'pd_{model_name}_unified{filename_suffix}.pdf'
+    plt.savefig(diag_path, bbox_inches='tight', format='pdf')
+    plt.close()
+    
+    print(f'      Saved unified diagram to {diag_path}')
+    return diag_path
+
+
 def generate_diagrams_for_embedding(
     data, 
     labels, 
@@ -154,7 +298,14 @@ def generate_diagrams_for_embedding(
         print(f'      Saved diagram to {diag_path}')
 
 
-def process_model_data(model_data_path, output_dir='images', max_samples=500, maxdim=2):
+def process_model_data(
+    model_data_path,
+    output_dir='images',
+    max_samples=500,
+    maxdim=2,
+    exclude_embeddings=None,
+    unified_only=True
+):
     """
     Process a single ModelData file and generate all diagrams.
     
@@ -163,6 +314,8 @@ def process_model_data(model_data_path, output_dir='images', max_samples=500, ma
         output_dir: Output directory for images
         max_samples: Maximum samples for persistence computation
         maxdim: Maximum homology dimension
+        exclude_embeddings: List of embedding names to exclude from unified figure (e.g., ['raw', 'pca'])
+        unified_only: If True, only generate unified figure; if False, also generate individual plots
     """
     print(f'\n{"="*60}')
     print(f'Processing: {model_data_path}')
@@ -188,31 +341,58 @@ def process_model_data(model_data_path, output_dir='images', max_samples=500, ma
         'umap_vae': model_data.umap_vae,
     }
     
-    # Process each embedding type
-    for emb_name, emb_data in embeddings.items():
-        if emb_data is None:
-            print(f'    Skipping {emb_name} (not available)')
-            continue
-        
-        try:
-            generate_diagrams_for_embedding(
-                data=emb_data,
-                labels=model_data.labels,
-                embedding_name=emb_name,
-                dataset_name=dataset_name,
-                model_name=model_name,
-                output_dir=output_dir,
-                max_samples=max_samples,
-                maxdim=maxdim
-            )
-        except Exception as e:
-            print(f'    Error processing {emb_name}: {e}')
-            import traceback
-            traceback.print_exc()
-            continue
+    # Generate unified figure
+    try:
+        generate_unified_persistence_diagrams(
+            embeddings_dict=embeddings,
+            labels=model_data.labels,
+            dataset_name=dataset_name,
+            model_name=model_name,
+            output_dir=output_dir,
+            max_samples=max_samples,
+            maxdim=maxdim,
+            exclude_embeddings=exclude_embeddings
+        )
+    except Exception as e:
+        print(f'    Error generating unified diagram: {e}')
+        import traceback
+        traceback.print_exc()
+    
+    # Optionally generate individual plots
+    if not unified_only:
+        for emb_name, emb_data in embeddings.items():
+            if emb_data is None:
+                print(f'    Skipping {emb_name} (not available)')
+                continue
+            
+            try:
+                generate_diagrams_for_embedding(
+                    data=emb_data,
+                    labels=model_data.labels,
+                    embedding_name=emb_name,
+                    dataset_name=dataset_name,
+                    model_name=model_name,
+                    output_dir=output_dir,
+                    max_samples=max_samples,
+                    maxdim=maxdim,
+                    save_diagrams=True,
+                    save_barcodes=True
+                )
+            except Exception as e:
+                print(f'    Error processing {emb_name}: {e}')
+                import traceback
+                traceback.print_exc()
+                continue
 
 
-def process_all_model_data(model_data_dir='model_data', output_dir='images', max_samples=500, maxdim=2):
+def process_all_model_data(
+    model_data_dir='model_data',
+    output_dir='images',
+    max_samples=500,
+    maxdim=2,
+    exclude_embeddings=None,
+    unified_only=True
+):
     """
     Process all ModelData files in a directory.
     
@@ -221,6 +401,8 @@ def process_all_model_data(model_data_dir='model_data', output_dir='images', max
         output_dir: Output directory for images
         max_samples: Maximum samples for persistence computation
         maxdim: Maximum homology dimension
+        exclude_embeddings: List of embedding names to exclude from unified figure
+        unified_only: If True, only generate unified figure; if False, also generate individual plots
     """
     model_data_path = Path(model_data_dir)
     model_files = list(model_data_path.glob('model_*.pkl'))
@@ -233,7 +415,9 @@ def process_all_model_data(model_data_dir='model_data', output_dir='images', max
                 model_data_path=str(model_file),
                 output_dir=output_dir,
                 max_samples=max_samples,
-                maxdim=maxdim
+                maxdim=maxdim,
+                exclude_embeddings=exclude_embeddings,
+                unified_only=unified_only
             )
         except Exception as e:
             print(f'Error processing {model_file}: {e}')
@@ -252,24 +436,42 @@ if __name__ == "__main__":
     parser.add_argument('--output_dir', type=str, default='images', help='Output directory for images')
     parser.add_argument('--max_samples', type=int, default=500, help='Maximum samples for persistence computation')
     parser.add_argument('--maxdim', type=int, default=2, help='Maximum homology dimension')
-    parser.add_argument('--no_barcodes', action='store_true', help='Skip barcode generation')
-    parser.add_argument('--no_diagrams', action='store_true', help='Skip persistence diagram generation')
+    parser.add_argument('--no_barcodes', action='store_true', help='Skip barcode generation (for individual plots)')
+    parser.add_argument('--no_diagrams', action='store_true', help='Skip persistence diagram generation (for individual plots)')
+    parser.add_argument(
+        '--exclude',
+        type=str,
+        nargs='+',
+        help='Embedding names to exclude from unified figure (e.g., --exclude raw pca)'
+    )
+    parser.add_argument(
+        '--individual_also',
+        action='store_true',
+        help='Also generate individual plots in addition to unified figure (default: only unified figure)'
+    )
     
     args = parser.parse_args()
+    
+    # Determine if we should generate individual plots
+    unified_only = not args.individual_also
     
     if args.all:
         process_all_model_data(
             model_data_dir=args.model_data_dir,
             output_dir=args.output_dir,
             max_samples=args.max_samples,
-            maxdim=args.maxdim
+            maxdim=args.maxdim,
+            exclude_embeddings=args.exclude,
+            unified_only=unified_only
         )
     elif args.model_data:
         process_model_data(
             model_data_path=args.model_data,
             output_dir=args.output_dir,
             max_samples=args.max_samples,
-            maxdim=args.maxdim
+            maxdim=args.maxdim,
+            exclude_embeddings=args.exclude,
+            unified_only=unified_only
         )
     else:
         parser.print_help()

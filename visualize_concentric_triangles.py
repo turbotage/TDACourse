@@ -39,24 +39,16 @@ def visualize_concentric_triangles(model_path, num_samples=500, config_path=None
     data_batch = data_batch[:actual_samples].to(device)
     labels = labels[:actual_samples]
 
-    # The input has shape (batch, 2, 2) where data is embedded
-    # From the loader: dataset_expanded[:, :, 0] = train_dataset.X[:, 0][:,None]
-    # This takes the x-coordinate and broadcasts it, so [:, :, 0] contains [x, x]
-    # But the original 2D data should have both x and y coordinates
-    # The embedding should be: first row is [x, 0], second row is [y, 0]
-    # So to extract the original 2D points: [data[0,0], data[1,0]]
-    original_embedded = data_batch.cpu().numpy()  # Shape: (batch, 2, 2)
-    
-    # Extract 2D points - row 0 has x in column 0, row 1 has y in column 0
-    original_points = original_embedded[:, :, 0]  # Shape: (batch, 2)
+    # The input has shape (batch, 2) - just 2D points (x, y)
+    original_points = data_batch.cpu().numpy()  # Shape: (batch, 2)
 
     # Reconstruct
     with torch.no_grad():
         outputs = model(data_batch)
-        reconstructed = outputs['recon']  # Shape: (batch, 4) - flattened
+        reconstructed = outputs['recon']  # Shape: (batch, 2) - same as input
 
-    # Reshape reconstructed to (batch, 2, 2) and extract the same way
-    reconstructed_points = reconstructed.reshape(num_samples, 2, 2)[:, :, 0].cpu().numpy()  # Shape: (batch, 2, 2)
+    # Reconstructed points are already in the correct shape (batch, 2)
+    reconstructed_points = reconstructed.cpu().numpy()  # Shape: (batch, 2)
 
     # Create color map based on labels
     colors = ['red', 'blue', 'green', 'cyan', 'magenta']

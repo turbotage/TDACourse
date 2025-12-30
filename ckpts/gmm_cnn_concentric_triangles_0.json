@@ -1,7 +1,7 @@
 {
   "model": "GMMVAE",
   "dataset": "ConcentricTriangles",
-  "embedding_dim": 32,
+  "embedding_dim": 7,
   "num_classes": 5,
   "beta_start": 0.0,
   "beta_end": 1,

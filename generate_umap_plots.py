@@ -12,104 +12,8 @@ from pathlib import Path
 from generate_model_data import ModelData
 
 
-def plot_umap_single(X, labels, title='UMAP', modelname='', dataset_name='', output_dir='images/umaps', filename_suffix=''):
-    """
-    Plot a single UMAP projection with color-coded labels.
-    
-    Args:
-        X: UMAP coordinates (numpy array or torch tensor, shape: [n_samples, 2])
-        labels: Labels for coloring (numpy array or torch tensor, shape: [n_samples])
-        title: Plot title
-        modelname: Model name for title and filename
-        dataset_name: Dataset name for title
-        output_dir: Output directory
-        filename_suffix: Additional suffix for filename
-    """
-    # Convert to numpy if needed
-    X = X.cpu().numpy() if isinstance(X, torch.Tensor) else X
-    labels = labels.cpu().numpy() if isinstance(labels, torch.Tensor) else labels
-    
-    fig, ax = plt.subplots(figsize=(8, 8))
-    scatter = ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='tab10', s=10, alpha=0.6)
-    ax.set_title(f'{title} - {dataset_name} - {modelname}')
-    ax.set_xlabel('UMAP 1')
-    ax.set_ylabel('UMAP 2')
-    plt.colorbar(scatter, ax=ax, label='Class')
-    plt.tight_layout()
-    
-    # Create filename
-    safe_title = title.replace(' ', '_').replace('UMAP', 'umap')
-    safe_modelname = modelname.replace('.pth', '').replace('.', '_')
-    filename = f'{safe_title}_{safe_modelname}'
-    if filename_suffix:
-        filename += f'_{filename_suffix}'
-    filename += '.png'
-    
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
-    filepath = output_path / filename
-    
-    plt.savefig(filepath, dpi=150, bbox_inches='tight')
-    plt.close()
-    print(f'      Saved to {filepath}')
-
-
-def plot_two_umaps(X1, labels1, X2, labels2, title1='UMAP 1', title2='UMAP 2', 
-                   modelname='', dataset_name='', output_dir='images/umaps', filename_suffix=''):
-    """
-    Plot two UMAP projections side by side for comparison.
-    
-    Args:
-        X1, X2: UMAP coordinates (numpy arrays or torch tensors, shape: [n_samples, 2])
-        labels1, labels2: Labels for coloring
-        title1, title2: Plot titles
-        modelname: Model name
-        dataset_name: Dataset name
-        output_dir: Output directory
-        filename_suffix: Additional suffix for filename
-    """
-    # Convert to numpy if needed
-    X1 = X1.cpu().numpy() if isinstance(X1, torch.Tensor) else X1
-    labels1 = labels1.cpu().numpy() if isinstance(labels1, torch.Tensor) else labels1
-    X2 = X2.cpu().numpy() if isinstance(X2, torch.Tensor) else X2
-    labels2 = labels2.cpu().numpy() if isinstance(labels2, torch.Tensor) else labels2
-
-    fig, axes = plt.subplots(1, 2, figsize=(16, 7))
-    
-    sc1 = axes[0].scatter(X1[:, 0], X1[:, 1], c=labels1, cmap='tab10', s=10, alpha=0.6)
-    axes[0].set_title(f'{title1} - {dataset_name} - {modelname}')
-    axes[0].set_xlabel('UMAP 1')
-    axes[0].set_ylabel('UMAP 2')
-    plt.colorbar(sc1, ax=axes[0], label='Class')
-
-    sc2 = axes[1].scatter(X2[:, 0], X2[:, 1], c=labels2, cmap='tab10', s=10, alpha=0.6)
-    axes[1].set_title(f'{title2} - {dataset_name} - {modelname}')
-    axes[1].set_xlabel('UMAP 1')
-    axes[1].set_ylabel('UMAP 2')
-    plt.colorbar(sc2, ax=axes[1], label='Class')
-
-    plt.tight_layout()
-    
-    # Create filename
-    safe_title1 = title1.replace(' ', '_').replace('UMAP', 'umap')
-    safe_title2 = title2.replace(' ', '_').replace('UMAP', 'umap')
-    safe_modelname = modelname.replace('.pth', '').replace('.', '_')
-    filename = f'{safe_title1}_{safe_title2}_{safe_modelname}'
-    if filename_suffix:
-        filename += f'_{filename_suffix}'
-    filename += '.png'
-    
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
-    filepath = output_path / filename
-    
-    plt.savefig(filepath, dpi=150, bbox_inches='tight')
-    plt.close()
-    print(f'      Saved to {filepath}')
-
-
 def plot_three_umaps(X1, labels1, X2, labels2, X3, labels3, 
-                     title1='UMAP 1', title2='UMAP 2', title3='UMAP 3',
+                     title1='Raw Data', title2='PCA Embedding', title3='VAE Embedding',
                      modelname='', dataset_name='', output_dir='images/umaps', filename_suffix=''):
     """
     Plot three UMAP projections side by side for comparison.
@@ -133,56 +37,56 @@ def plot_three_umaps(X1, labels1, X2, labels2, X3, labels3,
 
     fig, axes = plt.subplots(1, 3, figsize=(20, 6))
     
+    # Plot 1: Raw Data
     sc1 = axes[0].scatter(X1[:, 0], X1[:, 1], c=labels1, cmap='tab10', s=10, alpha=0.6)
-    axes[0].set_title(f'{title1} - {dataset_name}')
+    axes[0].set_title(title1, fontsize=12)
     axes[0].set_xlabel('UMAP 1')
     axes[0].set_ylabel('UMAP 2')
     plt.colorbar(sc1, ax=axes[0], label='Class')
 
+    # Plot 2: PCA Embedding
     sc2 = axes[1].scatter(X2[:, 0], X2[:, 1], c=labels2, cmap='tab10', s=10, alpha=0.6)
-    axes[1].set_title(f'{title2} - {dataset_name}')
+    axes[1].set_title(title2, fontsize=12)
     axes[1].set_xlabel('UMAP 1')
     axes[1].set_ylabel('UMAP 2')
     plt.colorbar(sc2, ax=axes[1], label='Class')
 
+    # Plot 3: VAE Embedding (highlighted)
     sc3 = axes[2].scatter(X3[:, 0], X3[:, 1], c=labels3, cmap='tab10', s=10, alpha=0.6)
-    axes[2].set_title(f'{title3} - {dataset_name}')
+    axes[2].set_title(title3, fontsize=12, fontweight='bold', color='#2E86AB')
     axes[2].set_xlabel('UMAP 1')
     axes[2].set_ylabel('UMAP 2')
     plt.colorbar(sc3, ax=axes[2], label='Class')
 
-    fig.suptitle(f'{modelname}', fontsize=14, y=1.02)
+    fig.suptitle(f'{modelname} - {dataset_name}', fontsize=14, y=1.02)
     plt.tight_layout()
     
     # Create filename
-    safe_title1 = title1.replace(' ', '_').replace('UMAP', 'umap')
-    safe_title2 = title2.replace(' ', '_').replace('UMAP', 'umap')
-    safe_title3 = title3.replace(' ', '_').replace('UMAP', 'umap')
+    safe_title1 = title1.replace(' ', '_').lower()
+    safe_title2 = title2.replace(' ', '_').lower()
+    safe_title3 = title3.replace(' ', '_').lower()
     safe_modelname = modelname.replace('.pth', '').replace('.', '_')
-    filename = f'{safe_title1}_{safe_title2}_{safe_title3}_{safe_modelname}'
+    filename = f'{safe_modelname}_{safe_title1}_{safe_title2}_{safe_title3}'
     if filename_suffix:
         filename += f'_{filename_suffix}'
-    filename += '.png'
+    filename += '.pdf'
     
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     filepath = output_path / filename
     
-    plt.savefig(filepath, dpi=150, bbox_inches='tight')
+    plt.savefig(filepath, format='pdf', bbox_inches='tight')
     plt.close()
     print(f'      Saved to {filepath}')
 
 
-def process_model_data(model_data_path, output_dir='images/umaps', plot_individual=True, plot_pairs=True, plot_all_three=True):
+def process_model_data(model_data_path, output_dir='images/umaps'):
     """
-    Process a single ModelData file and generate all UMAP plots.
+    Process a single ModelData file and generate three-way UMAP plot.
     
     Args:
         model_data_path: Path to pickled ModelData file
         output_dir: Output directory for images
-        plot_individual: Whether to plot individual UMAP projections
-        plot_pairs: Whether to plot pairwise comparisons
-        plot_all_three: Whether to plot all three UMAPs together
     """
     print(f'\n{"="*60}')
     print(f'Processing: {model_data_path}')
@@ -216,51 +120,8 @@ def process_model_data(model_data_path, output_dir='images/umaps', plot_individu
     
     print(f'    Available UMAP types: {list(available_umaps.keys())}')
     
-    # Plot individual UMAPs
-    if plot_individual:
-        print('    Generating individual UMAP plots...')
-        for umap_name, umap_coords in available_umaps.items():
-            try:
-                plot_umap_single(
-                    X=umap_coords,
-                    labels=labels,
-                    title=f'{umap_name} UMAP',
-                    modelname=model_name,
-                    dataset_name=dataset_name,
-                    output_dir=output_dir
-                )
-            except Exception as e:
-                print(f'      Error plotting {umap_name}: {e}')
-                import traceback
-                traceback.print_exc()
-    
-    # Plot pairwise comparisons
-    if plot_pairs and len(available_umaps) >= 2:
-        print('    Generating pairwise UMAP comparisons...')
-        umap_items = list(available_umaps.items())
-        for i in range(len(umap_items)):
-            for j in range(i + 1, len(umap_items)):
-                name1, coords1 = umap_items[i]
-                name2, coords2 = umap_items[j]
-                try:
-                    plot_two_umaps(
-                        X1=coords1,
-                        labels1=labels,
-                        X2=coords2,
-                        labels2=labels,
-                        title1=f'{name1} UMAP',
-                        title2=f'{name2} UMAP',
-                        modelname=model_name,
-                        dataset_name=dataset_name,
-                        output_dir=output_dir
-                    )
-                except Exception as e:
-                    print(f'      Error plotting {name1} vs {name2}: {e}')
-                    import traceback
-                    traceback.print_exc()
-    
     # Plot all three together
-    if plot_all_three and len(available_umaps) >= 3:
+    if len(available_umaps) >= 3:
         print('    Generating three-way UMAP comparison...')
         # Try to get Raw, PCA, VAE in that order
         umap_order = ['Raw', 'PCA', 'VAE']
@@ -281,9 +142,9 @@ def process_model_data(model_data_path, output_dir='images/umaps', plot_individu
                     labels2=labels,
                     X3=coords_list[2],
                     labels3=labels,
-                    title1=f'{names_list[0]} UMAP',
-                    title2=f'{names_list[1]} UMAP',
-                    title3=f'{names_list[2]} UMAP',
+                    title1='Raw Data',
+                    title2='PCA Embedding',
+                    title3='VAE Embedding',
                     modelname=model_name,
                     dataset_name=dataset_name,
                     output_dir=output_dir
@@ -292,19 +153,19 @@ def process_model_data(model_data_path, output_dir='images/umaps', plot_individu
                 print(f'      Error plotting three-way comparison: {e}')
                 import traceback
                 traceback.print_exc()
+        else:
+            print(f'    Error: Need all three UMAP types (Raw, PCA, VAE), but only found {list(available_umaps.keys())}')
+    else:
+        print(f'    Error: Need at least 3 UMAP types, but only found {len(available_umaps)}')
 
 
-def process_all_model_data(model_data_dir='model_data', output_dir='images/umaps', 
-                          plot_individual=True, plot_pairs=True, plot_all_three=True):
+def process_all_model_data(model_data_dir='model_data', output_dir='images/umaps'):
     """
     Process all ModelData files in a directory.
     
     Args:
         model_data_dir: Directory containing pickled ModelData files
         output_dir: Output directory for images
-        plot_individual: Whether to plot individual UMAP projections
-        plot_pairs: Whether to plot pairwise comparisons
-        plot_all_three: Whether to plot all three UMAPs together
     """
     model_data_path = Path(model_data_dir)
     model_files = list(model_data_path.glob('model_*.pkl'))
@@ -315,10 +176,7 @@ def process_all_model_data(model_data_dir='model_data', output_dir='images/umaps
         try:
             process_model_data(
                 model_data_path=str(model_file),
-                output_dir=output_dir,
-                plot_individual=plot_individual,
-                plot_pairs=plot_pairs,
-                plot_all_three=plot_all_three
+                output_dir=output_dir
             )
         except Exception as e:
             print(f'Error processing {model_file}: {e}')
@@ -330,36 +188,23 @@ def process_all_model_data(model_data_dir='model_data', output_dir='images/umaps
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description='Generate UMAP visualization plots')
+    parser = argparse.ArgumentParser(description='Generate three-way UMAP visualization plots')
     parser.add_argument('--model_data', type=str, help='Path to pickled ModelData file')
     parser.add_argument('--model_data_dir', type=str, default='model_data', help='Directory containing ModelData files')
     parser.add_argument('--all', action='store_true', help='Process all ModelData files in model_data_dir')
     parser.add_argument('--output_dir', type=str, default='images/umaps', help='Output directory for images')
-    parser.add_argument('--no_individual', action='store_true', help='Skip individual UMAP plots')
-    parser.add_argument('--no_pairs', action='store_true', help='Skip pairwise UMAP comparisons')
-    parser.add_argument('--no_three', action='store_true', help='Skip three-way UMAP comparison')
     
     args = parser.parse_args()
-    
-    plot_individual = not args.no_individual
-    plot_pairs = not args.no_pairs
-    plot_all_three = not args.no_three
     
     if args.all:
         process_all_model_data(
             model_data_dir=args.model_data_dir,
-            output_dir=args.output_dir,
-            plot_individual=plot_individual,
-            plot_pairs=plot_pairs,
-            plot_all_three=plot_all_three
+            output_dir=args.output_dir
         )
     elif args.model_data:
         process_model_data(
             model_data_path=args.model_data,
-            output_dir=args.output_dir,
-            plot_individual=plot_individual,
-            plot_pairs=plot_pairs,
-            plot_all_three=plot_all_three
+            output_dir=args.output_dir
         )
     else:
         parser.print_help()

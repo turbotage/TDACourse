@@ -7,3 +7,5 @@ data/
 global_data.pkl
 global_data_small.pkl
 .venv/
+report/
+ckpts/
