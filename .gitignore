@@ -9,3 +9,5 @@ global_data_small.pkl
 .venv/
 report/
 ckpts/
+.cursor/
+.vscode/
