@@ -1,7 +1,0 @@
----
-description: Managing files and directories
-globs:
-alwaysApply: true
----
-
-- All python file (.py) and directory names have to follow the PEP 8 convention (snake_case).

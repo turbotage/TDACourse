@@ -1,7 +1,0 @@
----
-description: Running Python scripts
-globs:
-alwaysApply: true
----
-
-- All the python scripts should be executed in the venv, env, or .venv python virtual environment.
